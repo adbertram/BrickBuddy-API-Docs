@@ -1,0 +1,140 @@
+openapi: 3.0.0
+info:
+  title: Piece Destinations API
+  description: API for retrieving piece destination information
+  version: 1.0.0
+
+paths:
+  /pieceDestinations:
+    get:
+      summary: Get piece destinations
+      description: Retrieves destination information for pieces, including set destinations and part destinations
+      parameters:
+        - in: query
+          name: lot_id
+          schema:
+            type: number
+          required: true
+          description: The ID of the lot to find destinations for
+        - in: query
+          name: recommend_location
+          schema:
+            type: boolean
+          required: false
+          description: Whether to recommend a location for the pieces
+        - in: query
+          name: condition
+          schema:
+            type: string
+            enum: ["U", "N"]
+          required: true
+          description: The condition of the pieces (U for used, N for new)
+        - in: query
+          name: lookup_options
+          schema:
+            type: array
+            items:
+              type: string
+              enum: ["sets", "parts"]
+          required: true
+          description: Array containing which destinations to look up (sets and/or parts)
+        - in: query
+          name: set_priority
+          schema:
+            type: string
+            enum: ["part_out_value", "sell_through", "per_piece_value", "complete_set_value"]
+          required: false
+          description: Required if lookup_options includes sets. Determines how to prioritize set destinations.
+        - in: query
+          name: qty
+          schema:
+            type: number
+          required: false
+          description: Optional. Only allowed and required if lookup_options includes sets. Must be a positive integer.
+      responses:
+        '200':
+          description: Piece destinations retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "RETRIEVED"
+                  message:
+                    type: string
+                    example: "Piece destinations retrieved successfully"
+                  data:
+                    type: object
+                    properties:
+                      set_destinations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                              example: "Demo Set 1"
+                            number:
+                              type: string
+                              example: "75300-1"
+                            user_set_item_id:
+                              type: integer
+                              example: 101
+                            qty_have:
+                              type: integer
+                              example: 5
+                            user_inventory_item_location_name:
+                              type: string
+                              example: "Set Bin A"
+                            qty_to_allocate:
+                              type: integer
+                              example: 2
+                      part_destinations:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            recommended:
+                              type: boolean
+                              example: true
+                            qty_on_hand:
+                              type: integer
+                              example: 0
+                            user_inventory_item_location_id:
+                              type: integer
+                              example: 201
+                            user_inventory_item_location_name:
+                              type: string
+                              example: "Parts Drawer 5"
+                            container_available_weight:
+                              type: number
+                              format: float
+                              example: 50.5
+        '400':
+          description: Bad request - Missing required parameters
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ERROR"
+                  message:
+                    type: string
+                    example: "Missing required parameter: lot_id"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ERROR"
+                  message:
+                    type: string
+                    example: "Internal server error"
